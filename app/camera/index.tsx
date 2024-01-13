@@ -1,44 +1,46 @@
 import { Camera, CameraType, ImageType } from 'expo-camera';
-import { useFocusEffect } from 'expo-router';
+import { Link, useFocusEffect, router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { Button, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+
 
 export default function CameraView() {
   const [type, setType] = useState(CameraType.back);
   const cameraRef = useRef<Camera>(null);
   const [cameraIsReady, setCameraIsReady] = useState(false);
   const [permission, requestPermission] = Camera.useCameraPermissions();
+  const [cameraBase64, setCameraBase64] = useState<string | undefined>();
   const [result, setResult] = useState<VisionApiResponse>();
 
-  useFocusEffect(() => {  
+  useFocusEffect(() => {
     console.log('useFocusEffect');
-    if(cameraRef.current && cameraIsReady) {
+    if (cameraRef.current && cameraIsReady) {
       cameraRef.current.resumePreview();
     }
   });
-  
-  useEffect(() => { 
+
+  useEffect(() => {
     console.log('permission');
     console.log(permission);
     return () => {
       console.log('cleanup');
-      if(cameraRef.current && cameraIsReady) { 
+      if (cameraRef.current && cameraIsReady) {
         cameraRef.current.stopRecording();
         cameraRef.current.pausePreview();
       }
     }
   }, [permission]);
 
-  function getInfoFromImage(imageBase64: string | undefined) {
+  function getInfoFromImage() {
     console.log('getInfoFromImage');
-    if(!imageBase64) {
+    if (!cameraBase64) {
       return;
     }
     const body = {
       requests: [
         {
           image: {
-            content: imageBase64,
+            content: cameraBase64,
           },
           features: [
             {
@@ -55,9 +57,10 @@ export default function CameraView() {
     })
       .then((response) => response.json())
       .then((response) => {
-         // transform response to VisionApiResponse
-        console.log(response);
+        // transform response to VisionApiResponse
+        console.log("response");
         setResult(response);
+        processImage();
       })
       .catch((error) => {
         console.log('Error: ', error);
@@ -80,9 +83,15 @@ export default function CameraView() {
         quality: 0.1,
         base64: true,
       }).then((data) => {
-        getInfoFromImage(data.base64);
+        ///getInfoFromImage(data.base64);
+        setCameraBase64(data.base64);
+      }).finally(() => { 
+        if(cameraRef.current && cameraIsReady) {
+           cameraRef.current.pausePreview()
+           /// router.replace('/home');
+        }
       });
-      console.log('takePicture');
+     
     }
   }
 
@@ -111,16 +120,34 @@ export default function CameraView() {
 
   return (
     <View style={styles.container}>
-      <Camera style={styles.camera} ref={cameraRef} type={type} onCameraReady={cameraReady}>
+      {
+        cameraBase64 ? (
+          <View style={{ flex: 1, backgroundColor: 'white' }}>
+            <Text>{cameraBase64}</Text>
+          </View>
+        ) :
+        <Camera style={styles.camera} ref={cameraRef} type={type} onCameraReady={cameraReady}>
         <View style={styles.buttonContainer}>
           <TouchableOpacity style={styles.button} onPress={takePicture}>
-            <Text style={styles.text}>Flip Camera</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={processImage}>
-            <Text style={styles.text}>Process</Text>
+            <Text style={styles.text}>Take Picture</Text>
           </TouchableOpacity>
         </View>
       </Camera>
+      }
+      
+      <View style={styles.actionButtonBar}>
+        <TouchableOpacity style={styles.button} onPress={getInfoFromImage}>
+          <Text style={styles.text}>process</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={takePicture}>
+          <Text style={styles.text}>take</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button}>
+          <Link href="/home">
+            <Text style={styles.text}>cancel</Text>
+          </Link>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -142,19 +169,26 @@ const styles = StyleSheet.create({
     alignContent: 'center',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'blue',
-    height: '20%'
+    backgroundColor: 'transparent',
+    height: '100%'
   },
   button: {
-    flex: 0.4,
+    flex: 1,
     alignSelf: 'center',
     alignItems: 'center',
-    backgroundColor: 'green',
+    backgroundColor: 'transparent```',
     alignContent: 'center',
     justifyContent: 'center',
   },
   text: {
     fontSize: 18,
     color: 'white',
-  }
+  },
+  actionButtonBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    backgroundColor: 'transparent',
+    alignItems: 'center',
+    height: 100,
+  },
 }); 
