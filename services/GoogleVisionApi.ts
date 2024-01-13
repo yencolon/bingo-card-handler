@@ -18,7 +18,7 @@ function readImageText(imageBase64: string | undefined) {
         ],
     };
 
-    fetch('https://vision.googleapis.com/v1/images:annotate?key=AIzaSyCq1XPGAPHLQjtyouTzpgMSoJ2OX-J43qs', {
+    fetch('https://vision.googleapis.com/v1/images:annotate?key=', {
         method: 'POST',
         body: JSON.stringify(body),
     })
