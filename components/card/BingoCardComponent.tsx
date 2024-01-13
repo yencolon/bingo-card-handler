@@ -25,10 +25,17 @@ const styles = StyleSheet.create({
         flex: 1,
         flexDirection: 'row-reverse',
         flexWrap: 'wrap',
-        width: '100%',
+        width: '80%',
+        alignSelf: 'center',
+        alignContent: 'center',
         backgroundColor: 'white'
     },
     bingoBox: {
-        width: "20%"
+        width: "20%", 
+        height: "20%",
+        borderColor: 'white',
+        borderWidth: 1, 
+        alignItems: 'center', 
+        justifyContent: 'center',
     }
 })
