@@ -9,7 +9,5 @@ interface TextAnnotation {
 }
 
 interface VisionApiResponse {
-    responses: {
-        textAnnotations: TextAnnotation[];
-    }[];
+    textAnnotations: TextAnnotation[];
 }
