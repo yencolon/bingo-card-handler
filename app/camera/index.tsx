@@ -1,7 +1,10 @@
 import { Camera, CameraType, ImageType } from 'expo-camera';
 import { Link, useFocusEffect, router } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
-import { Button, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SetStateAction, useEffect, useRef, useState } from 'react';
+import { Button, Image, StyleSheet, TouchableOpacity } from 'react-native';
+import { GoogleVisionApi } from '../../services/GoogleVisionApi';
+import { Text, View } from '../../components/Themed';
+import BingoCardComponent from '../../components/card/BingoCardComponent';
 
 
 export default function CameraView() {
@@ -36,35 +39,14 @@ export default function CameraView() {
     if (!cameraBase64) {
       return;
     }
-    const body = {
-      requests: [
-        {
-          image: {
-            content: cameraBase64,
-          },
-          features: [
-            {
-              type: 'DOCUMENT_TEXT_DETECTION',
-            },
-          ],
-        },
-      ],
-    };
 
-    fetch('https://vision.googleapis.com/v1/images:annotate?key=', {
-      method: 'POST',
-      body: JSON.stringify(body),
-    })
-      .then((response) => response.json())
-      .then((response) => {
-        // transform response to VisionApiResponse
-        console.log("response");
+    GoogleVisionApi.readImageText(cameraBase64).then((response: SetStateAction<VisionApiResponse | undefined>) => {
+      console.log("response");
+      if(response) {
         setResult(response);
         processImage();
-      })
-      .catch((error) => {
-        console.log('Error: ', error);
-      });
+      }
+    });
   }
 
   function toggleCameraType() {
@@ -99,10 +81,24 @@ export default function CameraView() {
     console.log('processImage');
     if(cameraRef.current && cameraIsReady) {
       cameraRef.current.pausePreview();
-      result?.responses[0].textAnnotations?.forEach((textAnnotation) => {
+      result?.textAnnotations?.forEach((textAnnotation) => {
         console.log(textAnnotation.description);
       });
     }
+  }
+
+
+  function tryRenderBingCard() {
+    console.log('tryRenderBingCard')
+    if(result?.textAnnotations === undefined) return null;
+    // Filter objects with numeric descriptions
+    const cardSymbols = result?.textAnnotations.filter(obj => /^\d+$/.test(obj.description));
+    // Sort numeric objects based on x-coordinate
+    cardSymbols.sort((a, b) => a.boundingPoly.vertices[0].x - b.boundingPoly.vertices[0].x);
+    // Add a free space object to the array
+    cardSymbols.splice(12, 0, { description: 'Free', locale: "", boundingPoly: { vertices: [{ x: 0, y: 0 }] } })
+
+    return ( <BingoCardComponent cardSymbols={cardSymbols} /> );
   }
 
   if (!permission) {
@@ -111,7 +107,7 @@ export default function CameraView() {
 
   if (!permission.granted) {
     return (
-      <View>
+      <View style={{ flex: 1, backgroundColor: 'white' }}>
         <Text>No access to camera</Text>
         <Button onPress={requestPermission} title="Request" />
       </View>
@@ -120,10 +116,11 @@ export default function CameraView() {
 
   return (
     <View style={styles.container}>
+      {tryRenderBingCard()}
       {
         cameraBase64 ? (
           <View style={{ flex: 1, backgroundColor: 'white' }}>
-            <Text>{cameraBase64}</Text>
+            <Image source={{ uri: `data:image/jpg;base64,${cameraBase64}` }} style={{ flex: 1 }} />
           </View>
         ) :
         <Camera style={styles.camera} ref={cameraRef} type={type} onCameraReady={cameraReady}>
