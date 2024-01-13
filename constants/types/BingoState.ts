@@ -1,11 +1,12 @@
 interface BingoState {
-    cards: Array<BingoCards>;
+    cards: Array<BingoCard>;
+    currentCard?: BingoCard;
 }
 
-interface BingoCards {
+interface BingoCard {
     id: number;
     title: string;
-    boxes: Array<BingoBox>
+    boxes: TextAnnotation[];
 }
 
 interface BingoBox {
@@ -18,3 +19,8 @@ interface BingoAction {
     type: string;
     payload: any;
 }
+
+type BingoContextType = {
+    state: BingoState;
+    dispatch: React.Dispatch<BingoAction>;
+  };
