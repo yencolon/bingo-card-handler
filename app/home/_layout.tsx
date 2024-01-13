@@ -5,6 +5,7 @@ import Colors from "../../constants/Colors";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 
 export const unstable_settings = {
+
   initialRouteName: 'boxes',
 };
 
@@ -18,24 +19,7 @@ function TabBarIcon(props: {
 export default function HomeLayout() {
    const colorScheme = useColorScheme();
     return (
-        <Stack>
-            <Stack.Screen name="boxes" options={{ 
-                headerShown: true, 
-                headerRight: () => (
-                    <Link href="/camera/" asChild>
-                      <Pressable>
-                        {({ pressed }) => (
-                          <FontAwesome
-                            name="camera"
-                            size={25}
-                            color={Colors[(colorScheme ?? 'light') as keyof typeof Colors].text}
-                            style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }}
-                          />
-                        )}
-                      </Pressable>
-                    </Link>)
-                }}  />
-        </Stack>
+        <Slot></Slot>
     );
 }
 

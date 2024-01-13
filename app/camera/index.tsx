@@ -1,10 +1,11 @@
 import { Camera, CameraType, ImageType } from 'expo-camera';
 import { Link, useFocusEffect, router } from 'expo-router';
-import { SetStateAction, useEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import { Button, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import { GoogleVisionApi } from '../../services/GoogleVisionApi';
 import { Text, View } from '../../components/Themed';
 import BingoCardComponent from '../../components/card/BingoCardComponent';
+import { useBingoContext } from '../../state/BingoContext';
 
 
 export default function CameraView() {
@@ -13,7 +14,8 @@ export default function CameraView() {
   const [cameraIsReady, setCameraIsReady] = useState(false);
   const [permission, requestPermission] = Camera.useCameraPermissions();
   const [cameraBase64, setCameraBase64] = useState<string | undefined>();
-  const [result, setResult] = useState<VisionApiResponse>();
+  const [result, setResult] = useState<TextAnnotation[]>();
+  const bingoContext = useBingoContext();
 
   useFocusEffect(() => {
     console.log('useFocusEffect');
@@ -40,11 +42,17 @@ export default function CameraView() {
       return;
     }
 
-    GoogleVisionApi.readImageText(cameraBase64).then((response: SetStateAction<VisionApiResponse | undefined>) => {
+    GoogleVisionApi.readImageText(cameraBase64).then((response: VisionApiResponse | undefined) => {
       console.log("response");
-      if(response) {
-        setResult(response);
-        processImage();
+      if (response !== undefined) {
+        if (response?.textAnnotations === undefined) return null;
+          // Filter objects with numeric descriptions
+          const cardSymbols = response?.textAnnotations.filter(obj => /^\d+$/.test(obj.description));
+          // Sort numeric objects based on x-coordinate
+          cardSymbols.sort((a, b) => a.boundingPoly.vertices[0].x - b.boundingPoly.vertices[0].x);
+          // Add a free space object to the array
+          cardSymbols.splice(12, 0, { description: 'Free', locale: "", boundingPoly: { vertices: [{ x: 0, y: 0 }] } })
+          setResult(cardSymbols);
       }
     });
   }
@@ -67,38 +75,50 @@ export default function CameraView() {
       }).then((data) => {
         ///getInfoFromImage(data.base64);
         setCameraBase64(data.base64);
-      }).finally(() => { 
-        if(cameraRef.current && cameraIsReady) {
-           cameraRef.current.pausePreview()
-           /// router.replace('/home');
+      }).finally(() => {
+        if (cameraRef.current && cameraIsReady) {
+          cameraRef.current.pausePreview()
+          /// router.replace('/home');
         }
       });
-     
+
     }
   }
 
   function processImage() {
     console.log('processImage');
-    if(cameraRef.current && cameraIsReady) {
+    if (cameraRef.current && cameraIsReady) {
       cameraRef.current.pausePreview();
-      result?.textAnnotations?.forEach((textAnnotation) => {
+      result?.forEach((textAnnotation) => {
         console.log(textAnnotation.description);
       });
     }
   }
 
+  function saveBingoCard() {
+    if(result === undefined) return;
+    if(bingoContext === undefined) return;
+
+    bingoContext.dispatch({type: 'SET_CARDS', payload: {
+      id: 1,
+      title: "Hola", 
+      boxes: result
+    }});
+  }
+
 
   function tryRenderBingCard() {
     console.log('tryRenderBingCard')
-    if(result?.textAnnotations === undefined) return null;
+    if (result === undefined) return null;
+
     // Filter objects with numeric descriptions
-    const cardSymbols = result?.textAnnotations.filter(obj => /^\d+$/.test(obj.description));
+    const cardSymbols = result.filter(obj => /^\d+$/.test(obj.description));
     // Sort numeric objects based on x-coordinate
     cardSymbols.sort((a, b) => a.boundingPoly.vertices[0].x - b.boundingPoly.vertices[0].x);
     // Add a free space object to the array
     cardSymbols.splice(12, 0, { description: 'Free', locale: "", boundingPoly: { vertices: [{ x: 0, y: 0 }] } })
 
-    return ( <BingoCardComponent cardSymbols={cardSymbols} /> );
+    return (<BingoCardComponent cardSymbols={cardSymbols} />);
   }
 
   if (!permission) {
@@ -119,32 +139,50 @@ export default function CameraView() {
       {tryRenderBingCard()}
       {
         cameraBase64 ? (
-          <View style={{ flex: 1, backgroundColor: 'white' }}>
+          <View style={styles.bingoCardPhotoContainer}>
             <Image source={{ uri: `data:image/jpg;base64,${cameraBase64}` }} style={{ flex: 1 }} />
           </View>
         ) :
-        <Camera style={styles.camera} ref={cameraRef} type={type} onCameraReady={cameraReady}>
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.button} onPress={takePicture}>
-            <Text style={styles.text}>Take Picture</Text>
-          </TouchableOpacity>
-        </View>
-      </Camera>
+          <Camera style={styles.camera} ref={cameraRef} type={type} onCameraReady={cameraReady}>
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity style={styles.button} onPress={takePicture}>
+                <Text style={styles.text}>Take Picture</Text>
+              </TouchableOpacity>
+            </View>
+          </Camera>
       }
-      
-      <View style={styles.actionButtonBar}>
-        <TouchableOpacity style={styles.button} onPress={getInfoFromImage}>
-          <Text style={styles.text}>process</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={takePicture}>
-          <Text style={styles.text}>take</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.button}>
-          <Link href="/home">
-            <Text style={styles.text}>cancel</Text>
-          </Link>
-        </TouchableOpacity>
-      </View>
+
+      {
+        result && (
+          <View style={styles.actionButtonBar}>
+            <TouchableOpacity style={styles.button} onPress={saveBingoCard}>
+              <Text style={styles.text}> Save </Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.button} onPress={toggleCameraType}>
+              <Text style={styles.text}> Discard </Text>
+            </TouchableOpacity>
+          </View>
+        )
+      }
+
+      {
+        !result && (
+          <View style={styles.actionButtonBar}>
+            <TouchableOpacity style={styles.button} onPress={getInfoFromImage}>
+              <Text style={styles.text}>process</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.button} onPress={takePicture}>
+              <Text style={styles.text}>take</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.button}>
+              <Link href="/home">
+                <Text style={styles.text}>cancel</Text>
+              </Link>
+            </TouchableOpacity>
+          </View>
+        )
+      }
+
     </View>
   );
 }
@@ -154,11 +192,13 @@ const styles = StyleSheet.create({
     flex: 1,
     width: '100%',
     flexDirection: 'column',
-    backgroundColor: 'red',
     justifyContent: 'center',
+    alignItems: 'center',
+    alignContent: 'center',
   },
   camera: {
     flex: 1,
+    width: "100%",
     alignContent: 'center',
     justifyContent: 'center',
   },
@@ -171,11 +211,8 @@ const styles = StyleSheet.create({
   },
   button: {
     flex: 1,
-    alignSelf: 'center',
     alignItems: 'center',
-    backgroundColor: 'transparent```',
-    alignContent: 'center',
-    justifyContent: 'center',
+    backgroundColor: 'transparent'
   },
   text: {
     fontSize: 18,
@@ -184,8 +221,14 @@ const styles = StyleSheet.create({
   actionButtonBar: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    backgroundColor: 'transparent',
+    backgroundColor: 'blue',
     alignItems: 'center',
-    height: 100,
+    height: "15%",
+
   },
+  bingoCardPhotoContainer: {
+    flex: 1,
+    backgroundColor: 'blue',
+    width: '80%'
+  }
 }); 

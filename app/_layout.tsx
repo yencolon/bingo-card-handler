@@ -1,10 +1,11 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
-import { SplashScreen, Stack } from 'expo-router';
+import { Link, SplashScreen, Stack } from 'expo-router';
 import { useEffect } from 'react';
-import { useColorScheme } from 'react-native';
+import { Pressable, useColorScheme } from 'react-native';
 import { BingoProvider } from '../state/BingoContext';
+import Colors from '../constants/Colors';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -50,9 +51,28 @@ function RootLayoutNav() {
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <BingoProvider>
         <Stack>
-          <Stack.Screen name="home" options={{ headerShown: false }} />
+          <Stack.Screen name="home" options={{
+            headerShown: true,
+            headerRight: () => (
+              <Link href="/camera/" asChild>
+                <Pressable>
+                  {({ pressed }) => (
+                    <FontAwesome
+                      name="camera"
+                      size={25}
+                      color={Colors[(colorScheme ?? 'light') as keyof typeof Colors].text}
+                      style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }}
+                    />
+                  )}
+                </Pressable>
+              </Link>)
+          }} />
           {/* <Stack.Screen name="camera"  options={{ presentation: 'modal' }} /> */}
-          <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+          {/* <Stack.Screen name="modal" options={{ presentation: 'modal' }} /> */}
+          <Stack.Screen name="camera" options={{
+            // presentation: 'modal',
+            headerShown: true
+          }} />
         </Stack>
       </BingoProvider>
     </ThemeProvider>
