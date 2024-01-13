@@ -5,29 +5,26 @@ import { useBingoContext } from "../../state/BingoContext";
 import BingoCardComponent from "../../components/card/BingoCardComponent";
 
 export default function Boxes() {
-    const [boxes, setBoxes] = useState<number[]>([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+  const [boxes, setBoxes] = useState<number[]>([1, 2, 3, 4, 5, 6, 7, 8, 9]);
 
-    const bingoContext = useBingoContext()
+  const bingoContext = useBingoContext();
 
-    return (
-        <View style={styles.container}>
-            {
-                bingoContext?.state.cards.map((card, index) => {
-                    return (
-                        <BingoCardComponent key={index} cardSymbols={card.boxes} />
-                    )
-                })
-            }
-        </View>
-    )
+  return (
+    <View style={styles.homeContainer}>
+      {bingoContext?.state.cards.map((card, index) => {
+        return (
+          <View style={{ width: "50%", height: 250 }}>
+            <BingoCardComponent key={index} cardSymbols={card.boxes} />
+          </View>
+        );
+      })}
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-around",
-        backgroundColor: "red"
-    }
-})
+  homeContainer: {
+    flex: 1,
+    flexDirection: "row",
+  }
+});

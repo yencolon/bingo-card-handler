@@ -95,6 +95,12 @@ export default function CameraView() {
     }
   }
 
+  function discardImage() {
+    setCameraBase64(undefined);
+    setResult(undefined);
+    cameraRef.current?.resumePreview()
+  }
+
   function saveBingoCard() {
     if(result === undefined) return;
     if(bingoContext === undefined) return;
@@ -104,6 +110,8 @@ export default function CameraView() {
       title: "Hola", 
       boxes: result
     }});
+
+    discardImage();
   }
 
 
@@ -158,7 +166,7 @@ export default function CameraView() {
             <TouchableOpacity style={styles.button} onPress={saveBingoCard}>
               <Text style={styles.text}> Save </Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.button} onPress={toggleCameraType}>
+            <TouchableOpacity style={styles.button} onPress={discardImage}>
               <Text style={styles.text}> Discard </Text>
             </TouchableOpacity>
           </View>
