@@ -54,7 +54,7 @@ function RootLayoutNav() {
           <Stack.Screen name="home" options={{
             headerShown: true,
             headerRight: () => (
-              <Link href="/camera/" asChild>
+              <Link href="/camera" asChild>
                 <Pressable>
                   {({ pressed }) => (
                     <FontAwesome

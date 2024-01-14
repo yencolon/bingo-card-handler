@@ -2,13 +2,14 @@ import { StyleSheet } from "react-native";
 import { View, Text } from "../Themed";
 
 export type BingoCardComponentProps = {
-  cardSymbols: TextAnnotation[];
+  cardSymbols: BingoBox[];
 };
 
 export default function BingoCardComponent(props: BingoCardComponentProps) {
-  const matrixJSX = props.cardSymbols.map((obj, index) => (
-    <View key={index} style={styles.bingoBox}>
-      <Text>{obj.description}</Text>
+  console.log("BingoCardComponent");
+  const matrixJSX = props.cardSymbols.map((box, index) => (
+    <View key={box.description} style={box.checked ? styles.bingoBoxChecked : styles.bingoBox}>
+      <Text>{box.description}</Text>
     </View>
   ));
 
@@ -41,5 +42,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",
+  },
+  bingoBoxChecked: {
+    width: "20%",
+    height: "20%",
+    borderColor: "white",
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "red",
   },
 });
