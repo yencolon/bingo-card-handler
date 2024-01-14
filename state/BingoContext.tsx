@@ -1,10 +1,11 @@
-import React, { createContext, useContext, useReducer } from 'react';
-import * as cards from '../mock/bingoCardMock.json';
+import React, { createContext, useContext, useReducer } from "react";
+import * as cards from "../mock/bingoCardMock.json";
+
 const initialState: BingoState = {
   cards: [
     {
-      id: 1, 
-      title: "mock", 
+      id: 1,
+      title: "mock",
       boxes: cards.cards.map((card) => {
         const b = card as BingoBox;
         return {
@@ -13,50 +14,53 @@ const initialState: BingoState = {
             vertices: b.boundingPoly.vertices.map((v) => {
               return {
                 x: v.x,
-                y: v.y
-              }
-            })
+                y: v.y,
+              };
+            }),
           },
           checked: b.description === "Free",
-        } as BingoBox
-      })
-    }
+        } as BingoBox;
+      }),
+    },
   ],
   currentCard: undefined,
   numbers: [],
 };
 
-const BingoContext = createContext<BingoContextType | undefined>(undefined);
+const BingoContext = createContext<BingoContextType>({
+  state: initialState,
+  dispatch: () => null,
+});
 
 const bingoReducer = (state: BingoState, action: BingoAction) => {
   switch (action.type) {
-    case 'SET_CARDS':
+    case "SET_CARDS":
       return {
         ...state,
-        cards: state.cards.concat(action.payload)
+        cards: state.cards.concat(action.payload),
       };
-    case 'ADD_NUMBER':
+    case "ADD_NUMBER":
       return {
         ...state,
         numbers: state.numbers.concat({
-          value: action.payload.numberToAdd, 
-          found: false
-        })
+          value: action.payload.numberToAdd,
+          found: false,
+        }),
       };
-    case 'UPDATE_NUMBER':
+    case "UPDATE_NUMBER":
       return {
         ...state,
         numbers: state.numbers.map((number) => {
           if (number.value === action.payload.number) {
             return {
               ...number,
-              found: action.payload.found
-            }
+              found: action.payload.found,
+            };
           }
           return number;
-        })
+        }),
       };
-    case 'UPDATE_BOX':
+    case "UPDATE_BOX":
       return {
         ...state,
         cards: state.cards.map((card) => {
@@ -69,18 +73,18 @@ const bingoReducer = (state: BingoState, action: BingoAction) => {
                   console.log("box found and updated");
                   return {
                     ...box,
-                    checked: true
-                  }
+                    checked: true,
+                  };
                 }
                 return box;
-              })
-            }
+              }),
+            };
           }
           return card;
-        })
+        }),
       };
     default:
-      return state
+      return state;
   }
 };
 
@@ -91,6 +95,6 @@ export const BingoProvider = ({ children }: any) => {
       {children}
     </BingoContext.Provider>
   );
-}
+};
 
 export const useBingoContext = () => useContext(BingoContext);

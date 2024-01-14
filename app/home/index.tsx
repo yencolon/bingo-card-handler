@@ -14,15 +14,15 @@ import { ScrollView } from "react-native-gesture-handler";
 
 export default function Boxes() {
   const [numberToAdd, setNumber] = useState<string>("");
-  const bingoContext = useBingoContext();
-  const numbersAdded = bingoContext?.state.numbers;
+  const { state, dispatch } = useBingoContext();
+  const numbersAdded = state.numbers;
 
   function addNumber() {
     console.log("addNumber" + numberToAdd);
     if (numberToAdd === "") {
       return;
     }
-    bingoContext?.dispatch({
+    dispatch({
       type: "ADD_NUMBER",
       payload: {
         numberToAdd: parseInt(numberToAdd),
@@ -30,10 +30,10 @@ export default function Boxes() {
     });
 
     let found = false;
-    bingoContext?.state.cards.forEach((card) => {
+    state.cards.forEach((card) => {
       card.boxes.forEach((box) => {
         if (box.description === numberToAdd) {
-          bingoContext?.dispatch({
+          dispatch({
             type: "UPDATE_BOX",
             payload: {
               cardId: card.id,
@@ -46,7 +46,7 @@ export default function Boxes() {
       });
     });
 
-    bingoContext?.dispatch({
+    dispatch({
       type: "UPDATE_NUMBER",
       payload: {
         number: parseInt(numberToAdd),
@@ -87,7 +87,7 @@ export default function Boxes() {
           </View>
           <ScrollView>
             <View style={styles.homeContainer}>
-              {bingoContext?.state.cards.map((card, index) => {
+              {state.cards.map((card, index) => {
                 return (
                   <View key={card.id} style={styles.bingoCardContainer}>
                     <BingoCardComponent key={index} cardSymbols={card.boxes} />

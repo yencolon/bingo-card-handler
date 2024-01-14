@@ -14,7 +14,7 @@ export default function CameraView() {
   const [permission, requestPermission] = Camera.useCameraPermissions();
   const [cameraBase64, setCameraBase64] = useState<string | undefined>();
   const [result, setResult] = useState<BingoBox[]>();
-  const bingoContext = useBingoContext();
+  const { dispatch } = useBingoContext();
 
   useFocusEffect(() => {
     console.log("useFocusEffect");
@@ -131,9 +131,8 @@ export default function CameraView() {
 
   function saveBingoCard() {
     if (result === undefined) return;
-    if (bingoContext === undefined) return;
 
-    bingoContext.dispatch({
+    dispatch({
       type: "SET_CARDS",
       payload: {
         id: 1,
