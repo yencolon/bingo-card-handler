@@ -1,17 +1,21 @@
 interface BingoState {
     cards: Array<BingoCard>;
     currentCard?: BingoCard;
+    numbers: Array<BingoNumbers>;
+}
+
+interface BingoNumbers {    
+    value: number;
+    found: boolean;
 }
 
 interface BingoCard {
     id: number;
     title: string;
-    boxes: TextAnnotation[];
+    boxes: BingoBox[];
 }
 
-interface BingoBox {
-    id: number;
-    text: string;
+interface BingoBox extends TextAnnotation {
     checked: boolean;
 }
 
