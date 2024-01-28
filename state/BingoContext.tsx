@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useReducer } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useReducer,
+  useRef,
+} from "react";
 import * as cards from "../mock/bingoCardMock.json";
 
 const initialState: BingoState = {
@@ -6,6 +12,7 @@ const initialState: BingoState = {
     {
       id: 1,
       title: "mock",
+      isBingo: false,
       boxes: cards.cards.map((card) => {
         const b = card as BingoBox;
         return {
@@ -23,7 +30,7 @@ const initialState: BingoState = {
       }),
     },
   ],
-  currentCard: undefined,
+  recentFoundCards: [],
   numbers: [],
 };
 
@@ -83,6 +90,38 @@ const bingoReducer = (state: BingoState, action: BingoAction) => {
           return card;
         }),
       };
+    case "UPDATE_BINGO":
+      return {
+        ...state,
+        cards: state.cards.map((card) => {
+          if (card.id === action.payload.cardId) {
+            console.log("card found");
+            return {
+              ...card,
+              isBingo: action.payload.isBingo,
+            };
+          }
+          return card;
+        }),
+      };
+    case "UPDATE_RECENT_FOUND":
+      return {
+        ...state,
+        recentFoundCards: state.recentFoundCards.concat(
+          state.recentFoundCards.filter(
+            (card) => card.id == action.payload.cardId
+          )
+            ? state.cards.filter((card) => {
+                return card.id === action.payload.cardId;
+              })
+            : []
+        ),
+      };
+    case "RESET_RECENT_FOUND":
+      return {
+        ...state,
+        recentFoundCards: [],
+      };
     default:
       return state;
   }
@@ -90,6 +129,7 @@ const bingoReducer = (state: BingoState, action: BingoAction) => {
 
 export const BingoProvider = ({ children }: any) => {
   const [state, dispatch] = useReducer(bingoReducer, initialState);
+
   return (
     <BingoContext.Provider value={{ state, dispatch }}>
       {children}

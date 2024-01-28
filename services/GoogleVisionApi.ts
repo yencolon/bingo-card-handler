@@ -1,6 +1,6 @@
 function readImageText(imageBase64: string | undefined): Promise<VisionApiResponse | undefined> {
     console.log('getInfoFromImage Fucntion');
-    const apiKey = process.env.EXPO_PUBLIC__GOOGLE_VISION_API_KEY;
+    const apiKey = process.env.EXPO_PUBLIC_GOOGLE_VISION_API_KEY;
     let apiResponse: VisionApiResponse | undefined;
     const body = {
         requests: [

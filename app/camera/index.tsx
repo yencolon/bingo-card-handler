@@ -147,7 +147,12 @@ export default function CameraView() {
   function tryRenderBingCard() {
     console.log("tryRenderBingCard");
     if (result === undefined) return null;
-    return <BingoCardComponent cardSymbols={result} />;
+    return <BingoCardComponent card={{
+      boxes: result, 
+      isBingo: false,
+      id: 1,
+      title: "Hola",
+    }} />;
   }
 
   if (!permission) {

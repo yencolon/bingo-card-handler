@@ -1,6 +1,6 @@
 interface BingoState {
     cards: Array<BingoCard>;
-    currentCard?: BingoCard;
+    recentFoundCards: Array<BingoCard>;
     numbers: Array<BingoNumbers>;
 }
 
@@ -12,6 +12,7 @@ interface BingoNumbers {
 interface BingoCard {
     id: number;
     title: string;
+    isBingo: boolean;
     boxes: BingoBox[];
 }
 
@@ -27,4 +28,4 @@ interface BingoAction {
 type BingoContextType = {
     state: BingoState;
     dispatch: React.Dispatch<BingoAction>;
-  };
+};

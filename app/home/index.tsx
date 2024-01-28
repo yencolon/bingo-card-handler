@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import {
   View,
   Text,
@@ -11,11 +11,30 @@ import {
 import { useBingoContext } from "../../state/BingoContext";
 import BingoCardComponent from "../../components/card/BingoCardComponent";
 import { ScrollView } from "react-native-gesture-handler";
+import hasBingo from "../../utils/bingoChecker";
 
 export default function Boxes() {
   const [numberToAdd, setNumber] = useState<string>("");
   const { state, dispatch } = useBingoContext();
   const numbersAdded = state.numbers;
+
+  useEffect(() => {
+    const foundCards = state.cards;
+    console.log("foundCards");
+    if (foundCards.length > 0) {
+      foundCards.forEach((card) => {
+        if (hasBingo(card)) {
+          dispatch({
+            type: "UPDATE_BINGO",
+            payload: {
+              cardId: card.id,
+              isBingo: true,
+            },
+          });
+        }
+      });
+    }
+  }, [numberToAdd]);
 
   function addNumber() {
     console.log("addNumber" + numberToAdd);
@@ -31,7 +50,7 @@ export default function Boxes() {
 
     let found = false;
     state.cards.forEach((card) => {
-      card.boxes.forEach((box) => {
+      for (let box of card.boxes) {
         if (box.description === numberToAdd) {
           dispatch({
             type: "UPDATE_BOX",
@@ -41,9 +60,9 @@ export default function Boxes() {
             },
           });
           found = true;
-          return true;
+          break;
         }
-      });
+      }
     });
 
     dispatch({
@@ -90,7 +109,7 @@ export default function Boxes() {
               {state.cards.map((card, index) => {
                 return (
                   <View key={card.id} style={styles.bingoCardContainer}>
-                    <BingoCardComponent key={index} cardSymbols={card.boxes} />
+                    <BingoCardComponent key={index} card={card} />
                   </View>
                 );
               })}
