@@ -14,7 +14,7 @@ export {
 
 export const unstable_settings = {
   // Ensure that reloading on `/modal` keeps a back button present.
-  initialRouteName: 'home',
+  initialRouteName: 'index',
 };
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -51,8 +51,10 @@ function RootLayoutNav() {
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <BingoProvider>
         <Stack>
+          <Stack.Screen name="index" options={{ headerShown: true }} />
           <Stack.Screen name="home" options={{
             headerShown: true,
+            headerTitle: 'Bingo',
             headerRight: () => (
               <Link href="/camera" asChild>
                 <Pressable>
@@ -67,12 +69,11 @@ function RootLayoutNav() {
                 </Pressable>
               </Link>)
           }} />
-          {/* <Stack.Screen name="camera"  options={{ presentation: 'modal' }} /> */}
-          {/* <Stack.Screen name="modal" options={{ presentation: 'modal' }} /> */}
           <Stack.Screen name="camera" options={{
             // presentation: 'modal',
+            headerTitle: 'Camera',
             headerShown: true
-          }} />
+          }} /> 
         </Stack>
       </BingoProvider>
     </ThemeProvider>

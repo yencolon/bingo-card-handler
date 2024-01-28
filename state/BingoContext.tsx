@@ -1,35 +1,8 @@
-import React, {
-  createContext,
-  useContext,
-  useEffect,
-  useReducer,
-  useRef,
-} from "react";
+import React, { createContext, useContext, useReducer } from "react";
 import * as cards from "../mock/bingoCardMock.json";
 
 const initialState: BingoState = {
-  cards: [
-    {
-      id: 1,
-      title: "mock",
-      isBingo: false,
-      boxes: cards.cards.map((card) => {
-        const b = card as BingoBox;
-        return {
-          description: b.description,
-          boundingPoly: {
-            vertices: b.boundingPoly.vertices.map((v) => {
-              return {
-                x: v.x,
-                y: v.y,
-              };
-            }),
-          },
-          checked: b.description === "Free",
-        } as BingoBox;
-      }),
-    },
-  ],
+  cards: [],
   recentFoundCards: [],
   numbers: [],
 };

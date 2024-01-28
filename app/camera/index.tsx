@@ -17,17 +17,13 @@ export default function CameraView() {
   const { dispatch } = useBingoContext();
 
   useFocusEffect(() => {
-    console.log("useFocusEffect");
     if (cameraRef.current && cameraIsReady) {
       cameraRef.current.resumePreview();
     }
   });
 
   useEffect(() => {
-    console.log("permission");
-    console.log(permission);
     return () => {
-      console.log("cleanup");
       if (cameraRef.current && cameraIsReady) {
         cameraRef.current.stopRecording();
         cameraRef.current.pausePreview();
@@ -36,14 +32,12 @@ export default function CameraView() {
   }, [permission]);
 
   function getInfoFromImage() {
-    console.log("getInfoFromImage");
     if (!cameraBase64) {
       return;
     }
 
     GoogleVisionApi.readImageText(cameraBase64).then(
       (response: VisionApiResponse | undefined) => {
-        console.log("response");
         if (response !== undefined) {
           if (response?.textAnnotations === undefined) return null;
           // Filter objects with numeric descriptions
@@ -88,7 +82,6 @@ export default function CameraView() {
   }
 
   function cameraReady() {
-    console.log("cameraReady");
     setCameraIsReady(true);
   }
 
@@ -114,11 +107,9 @@ export default function CameraView() {
   }
 
   function processImage() {
-    console.log("processImage");
     if (cameraRef.current && cameraIsReady) {
       cameraRef.current.pausePreview();
       result?.forEach((textAnnotation) => {
-        console.log(textAnnotation.description);
       });
     }
   }
@@ -145,7 +136,6 @@ export default function CameraView() {
   }
 
   function tryRenderBingCard() {
-    console.log("tryRenderBingCard");
     if (result === undefined) return null;
     return <BingoCardComponent card={{
       boxes: result, 
